@@ -1,0 +1,54 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Java
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'zulu'
+    
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v2
+      with:
+        api-level: 35
+        ndk-version: 25.1.8937393
+        cmake-version: 3.22.1
+    
+    - name: Setup Gradle
+      uses: gradle/gradle-build-action@v2
+      with:
+        gradle-version: 8.9
+    
+    - name: Build APK Debug
+      run: |
+        cd android_skeleton
+        chmod +x ../gradlew
+        ./gradlew assembleDebug
+    
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: app-debug
+        path: android_skeleton/app/build/outputs/apk/debug/app-debug.apk
+        retention-days: 30
+    
+    - name: Generate Build Summary
+      run: |
+        echo "# Build Success ✅" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**APK:** app-debug.apk" >> $GITHUB_STEP_SUMMARY
+        echo "**Size:** $(du -h android_skeleton/app/build/outputs/apk/debug/app-debug.apk | cut -f1)" >> $GITHUB_STEP_SUMMARY
+        echo "**Date:** $(date)" >> $GITHUB_STEP_SUMMARY
