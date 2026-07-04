@@ -1,5 +1,6 @@
 // libpd_wrapper.cpp — Integración real con LibPD
 #include "libpd_wrapper.h"
+// libpd headers — copiados a cpp/libpd/include/ por el workflow CI
 #include "libpd/include/libpd.h"
 #include <android/log.h>
 #include <mutex>
