@@ -1,0 +1,42 @@
+Pure Data - Patch de prototipo mínimo (instrucciones)
+
+Objetivo: patch mínimo que combine:
+- Dos osciladores senoidales para la señal de "luz" con pequeña diferencia (binaural beat)
+- Una fuente granular simple para representar material
+- Mezcla y control por mensajes externos (frecuencia, amplitud, grainDensity)
+
+Estructura sugerida (usar Pure Data vanilla):
+
+1) Objetos y flujo
+- [osc~] x2  // carrier left y right para luz
+- [phasor~] / [osc~] (alternativa para control)
+- [noise~] -> [lop~ 8000] -> [env~] -> [*~] // fuente para granular (simple)
+- [tabread4~] / [tabplay~] // si se desea sample-grain
+- [*~] y [+~] para mezcla canales
+- [dac~] salida estéreo
+
+2) Mensajes de control (recibidos en el patch)
+- /light-freq-left <hz>
+- /light-freq-right <hz>
+- /light-amp <0..1>
+- /material-density <0..1> // controla tasa de grains o nivel de ruido
+- /distance-cutoff <hz> // ajusta [lop~]
+
+3) Notas de implementación
+- Mantener bloques de procesamiento pequeños (blocksize 64) en host nativo
+- Para integración Android, exportar patch y usar LibPD o compilar DSP en C++ (FAUST o mano) si se necesita menor latencia
+
+4) Patch ejemplo (pseudocódigo Pd - convertir a objetos Pd en el editor):
+
+-- start pseudo-pd --
+; pd light-left osc~ 4000
+; pd light-right osc~ 3996
+; pd env vline~
+; pd noise-source noise~
+; pd lpf noise~ -> lop~ 12000
+; pd grain-gain *~ 0.4
+; pd mix-left +~ (light-left*0.6) + (grain*0.4) -> dac~ left
+; pd mix-right +~ (light-right*0.6) + (grain*0.4) -> dac~ right
+-- end pseudo-pd --
+
+Si deseas, puedo convertir esto en un archivo .pd real (texto correcto) y también preparar el host C++ / LibPD skeleton para Android.

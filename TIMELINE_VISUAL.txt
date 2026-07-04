@@ -1,0 +1,270 @@
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                 VISUALONDA: TIMELINE 18 SEMANAS                              ║
+║                      Junio 2026 - Noviembre 2026                             ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+
+FASE 1: FOUNDATION (Semanas 1-4)
+├─ Objetivo: Audio end-to-end funcional
+├─ Team: Android (2) + Audio (0.5) + Tech Lead
+└─ Status: 🚀 INICIA PROXIMA SEMANA
+
+┌────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│ SEMANA 1: LibPD Integration + Audio Setup                                      │
+│ ├─ Sun  Jun 3  │ Setup inicial + kick-off                                     │
+│ ├─ Mon  Jun 4  │ LibPD descargar + CMakeLists.txt                            │
+│ ├─ Tue  Jun 5  │ libpd_wrapper.cpp implementar                               │
+│ ├─ Wed  Jun 6  │ Testing + debugging                                         │
+│ ├─ Thu  Jun 7  │ Audio engine (AAudio) planning                              │
+│ ├─ Fri  Jun 8  │ Code review + merge                                         │
+│ └─ Deliverable: ✅ LibPD compilado + loaded                                  │
+│                                                                                 │
+│ SEMANA 2: Audio Engine (AAudio)                                               │
+│ ├─ Mon  Jun 11 │ audio_engine.cpp implementar                                │
+│ ├─ Tue  Jun 12 │ AAudio callbacks + buffer management                        │
+│ ├─ Wed  Jun 13 │ MainActivity integración                                    │
+│ ├─ Thu  Jun 14 │ Testing en dispositivo real                                 │
+│ ├─ Fri  Jun 15 │ Performance profiling + optimization                        │
+│ └─ Deliverable: ✅ Audio stream 44.1kHz, 0 crashes                           │
+│                                                                                 │
+│ SEMANA 3-4: Vision Frontend                                                   │
+│ ├─ Mon  Jun 18 │ Camera capture setup (CameraX)                              │
+│ ├─ Tue  Jun 19 │ Frame processing + grid generation                          │
+│ ├─ Wed  Jun 20 │ JSON schema generation                                      │
+│ ├─ Thu  Jun 21 │ Integración: camera → mapeo → audio                         │
+│ ├─ Fri  Jun 22 │ End-to-end testing (cámara → sonido)                        │
+│ ├─ Mon  Jun 25 │ Mapeos completos validation                                 │
+│ ├─ Tue  Jun 26 │ Latency profiling (<100ms target)                           │
+│ ├─ Wed  Jun 27 │ Stabilization + bug fixes                                   │
+│ ├─ Thu  Jun 28 │ Final review + team demo                                    │
+│ └─ Deliverable: ✅ MVP Fase 1 COMPLETE                                       │
+│                                                                                 │
+│ 🎯 GATE: Fase 1 Review (Jun 28)                                              │
+│    Criterios: Audio funcional, Cámara viva, Latencia <100ms, 0 crashes      │
+│    Decision: PROCEED → Fase 2 ✓                                              │
+│                                                                                 │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+
+FASE 2: ACCESIBILIDAD (Semanas 5-8)
+├─ Objetivo: Navegación accesible completa
+├─ Team: Android (1) + Tech Lead + (NEW) Accesibilidad spec
+└─ Status: 📋 PLANIFICADO (Inicia Semana 5)
+
+┌────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│ SEMANA 5: TalkBack Integration + Gesture Recognition                           │
+│ ├─ Mon  Jul 1  │ Accessibility Service setup                                 │
+│ ├─ Tue  Jul 2  │ TalkBack custom labels + hints                              │
+│ ├─ Wed  Jul 3  │ Gesture detector (swipe, pinch, tap)                        │
+│ ├─ Thu  Jul 4  │ Haptic feedback integration                                 │
+│ ├─ Fri  Jul 5  │ Testing con screen reader                                   │
+│ └─ Deliverable: ✅ Navegación básica accesible                               │
+│                                                                                 │
+│ SEMANA 6-7: Modo Exploración + Settings                                       │
+│ ├─ Mon  Jul 8  │ Modo exploración detallado (finger tracking)                │
+│ ├─ Tue  Jul 9  │ Zoom sonoro virtual                                         │
+│ ├─ Wed  Jul 10 │ Modos múltiples (Cámara, Pantalla, Galería)                │
+│ ├─ Thu  Jul 11 │ Settings Activity (accesible)                               │
+│ ├─ Fri  Jul 12 │ Config JSON + SharedPreferences                             │
+│ ├─ Mon  Jul 15 │ Tuning + UX improvements                                    │
+│ ├─ Tue  Jul 16 │ Usability testing (usuarios ciegos)                         │
+│ ├─ Wed  Jul 17 │ Feedback integration + iterations                           │
+│ └─ Deliverable: ✅ Accesibilidad 100% funcional                              │
+│                                                                                 │
+│ SEMANA 8: Beta Testing (Usuarios Ciegos)                                       │
+│ ├─ Thu  Jul 18 │ Beta distribution (10-20 usuarios)                          │
+│ ├─ Fri  Jul 19 │ Feedback collection                                         │
+│ ├─ Mon  Jul 22 │ Bug triage + prioritization                                 │
+│ └─ Deliverable: ✅ Beta feedback consolidado                                │
+│                                                                                 │
+│ 🎯 GATE: Fase 2 Review (Jul 22)                                              │
+│    Criterios: TalkBack works, 5+ gestos, Usability test passed, Beta OK     │
+│    Decision: PROCEED → Fase 3 ✓                                              │
+│                                                                                 │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+
+FASE 3: INTELIGENCIA (Semanas 9-12)
+├─ Objetivo: ML models integrados + profundidad
+├─ Team: ML (1) + Android (0.5) + Tech Lead
+└─ Status: 📋 PLANIFICADO (Inicia Semana 9)
+
+┌────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│ SEMANA 9-10: Object Detection (TensorFlow Lite)                               │
+│ ├─ Mon  Jul 25 │ TensorFlow Lite setup en Android                            │
+│ ├─ Tue  Jul 26 │ MobileNetV2 model cargar                                    │
+│ ├─ Wed  Jul 27 │ Inferencia @ 30fps (GPU delegate)                           │
+│ ├─ Thu  Jul 28 │ Bounding boxes → grid cells                                 │
+│ ├─ Fri  Jul 29 │ Confidence scores mapping                                   │
+│ ├─ Mon  Aug 1  │ Performance tuning (<30ms)                                  │
+│ └─ Deliverable: ✅ Objetos detectados en sonido 3D                           │
+│                                                                                 │
+│ SEMANA 10-11: Depth Estimation + Text Recognition                             │
+│ ├─ Tue  Aug 2  │ MiDaS depth model integración                               │
+│ ├─ Wed  Aug 3  │ Depth map → distance mapping                                │
+│ ├─ Thu  Aug 4  │ OCR model (Tesseract / ML Kit)                              │
+│ ├─ Fri  Aug 5  │ Text localization en grid                                   │
+│ ├─ Mon  Aug 8  │ Modo lectura (TTS + sonificación)                           │
+│ └─ Deliverable: ✅ Profundidad + Texto reconocido                            │
+│                                                                                 │
+│ SEMANA 11-12: Face/Hand Detection + Optimization                              │
+│ ├─ Tue  Aug 9  │ MediaPipe Face Mesh setup                                   │
+│ ├─ Wed  Aug 10 │ Hand tracking integración                                   │
+│ ├─ Thu  Aug 11 │ Expresión facial → binaural beat variants                   │
+│ ├─ Fri  Aug 12 │ Latency reduction (target <150ms)                           │
+│ ├─ Mon  Aug 15 │ Profiling CPU/Memory                                        │
+│ └─ Deliverable: ✅ Latencia <150ms, Personas detectadas                      │
+│                                                                                 │
+│ 🎯 GATE: Fase 3 Review (Aug 15)                                              │
+│    Criterios: ML integrado, Depth OK, Latencia <150ms, Accuracy >80%        │
+│    Decision: PROCEED → Fase 4 ✓                                              │
+│                                                                                 │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+
+FASE 4: PULIDO & RELEASE (Semanas 13-18)
+├─ Objetivo: Producto listo para Google Play Store
+├─ Team: Todos (1 FTE dev + 0.5 QA) + Tech Lead
+└─ Status: 📋 PLANIFICADO (Inicia Semana 13)
+
+┌────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│ SEMANA 13-14: Performance Optimization                                        │
+│ ├─ Mon  Aug 18 │ CPU/Memory profiling (Android Studio)                       │
+│ ├─ Tue  Aug 19 │ SIMD optimization (critical paths)                          │
+│ ├─ Wed  Aug 20 │ GPU acceleration dónde sea posible                          │
+│ ├─ Thu  Aug 21 │ Cache optimization                                          │
+│ ├─ Fri  Aug 22 │ Adaptive FPS (reduce si sobrecarga)                         │
+│ ├─ Mon  Aug 25 │ Testing: 1 hora continuous = stable                         │
+│ └─ Deliverable: ✅ CPU <15%, RAM <100MB                                      │
+│                                                                                 │
+│ SEMANA 14-15: Audio Safety + QA Testing                                       │
+│ ├─ Tue  Aug 26 │ SPL protection hardening                                    │
+│ ├─ Wed  Aug 27 │ Dinamic range compression                                   │
+│ ├─ Thu  Aug 28 │ Binaural beat safety (5-12Hz verify)                        │
+│ ├─ Fri  Aug 29 │ Comprehensive test suite (JUnit + E2E)                      │
+│ ├─ Mon  Sep 1  │ Regression testing                                          │
+│ ├─ Tue  Sep 2  │ Beta testing (20+ usuarios)                                 │
+│ └─ Deliverable: ✅ Audio 100% seguro, Bugs <5                                │
+│                                                                                 │
+│ SEMANA 15-16: Documentation + UI Refinement                                   │
+│ ├─ Wed  Sep 3  │ User Manual (formato accesible)                             │
+│ ├─ Thu  Sep 4  │ Developer Guide + API reference                             │
+│ ├─ Fri  Sep 5  │ Onboarding flow refinement                                  │
+│ ├─ Mon  Sep 8  │ Tutorial gestos (interactivo)                               │
+│ ├─ Tue  Sep 9  │ Material Design 3 compliance check                          │
+│ └─ Deliverable: ✅ Documentación completa                                    │
+│                                                                                 │
+│ SEMANA 16-18: Release & Distribution                                          │
+│ ├─ Wed  Sep 10 │ App signing + versioning                                    │
+│ ├─ Thu  Sep 11 │ Google Play Store submission                                │
+│ ├─ Fri  Sep 12 │ Screenshots + descripciones (accesibles)                    │
+│ ├─ Mon  Sep 15 │ Privacy policy + terms                                      │
+│ ├─ Tue  Sep 16 │ Beta track launch (open beta)                               │
+│ ├─ Wed  Sep 17 │ Feedback period (7 days)                                    │
+│ ├─ Thu  Sep 18 │ Final adjustments                                           │
+│ ├─ Fri  Sep 19 │ PRODUCTION RELEASE 🎉                                       │
+│ ├─ Mon  Sep 22 │ Launch announcement (redes, prensa)                         │
+│ └─ Deliverable: ✅ LIVE EN GOOGLE PLAY STORE                                 │
+│                                                                                 │
+│ 🎯 FINAL GATE: Release Review (Sep 19)                                       │
+│    Criterios: Performance OK, Security passed, Docs complete, Beta OK       │
+│    Decision: ✅ LAUNCH! 🚀                                                   │
+│                                                                                 │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+HITOS CRÍTICOS (4 Gates)
+
+Gate 1 (Semana 4, Jun 28)   ✅ FASE 1 DONE
+├─ Audio engine funcional
+├─ Cámara 30fps
+├─ Latencia <100ms
+└─ → PROCEED: Fase 2
+
+Gate 2 (Semana 8, Jul 22)   📋 FASE 2 DONE
+├─ TalkBack + Gestos
+├─ Accesibilidad 100%
+├─ Beta testing complete
+└─ → PROCEED: Fase 3
+
+Gate 3 (Semana 12, Aug 15)  📋 FASE 3 DONE
+├─ ML models integrados
+├─ Latencia <150ms
+├─ Personas detectadas
+└─ → PROCEED: Fase 4
+
+Gate 4 (Semana 18, Sep 19)  📋 RELEASE 🚀
+├─ Performance OK
+├─ Security passed
+├─ Documentation complete
+└─ → LAUNCH: Google Play Store
+
+═══════════════════════════════════════════════════════════════════════════════
+
+PARALELO: ACTIVIDADES TRANSVERSALES
+
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ Semanas 1-18: CONTINUO                                                         │
+├─ Daily standups (15 min)                                                      │
+├─ Sprint reviews (Viernes 3pm)                                                 │
+├─ Bi-weekly retrospectives                                                     │
+├─ Code reviews (24h turnaround)                                                │
+├─ Documentation updates                                                        │
+├─ User research (sesiones con ciegos)                                          │
+├─ Performance monitoring                                                       │
+└─ Risk management (weekly check)                                               │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+
+RESUMEN: 18 SEMANAS = 4 FASES = 1 PRODUCTO
+
+Jun 2026          Jul 2026            Aug 2026            Sep 2026
+│                 │                   │                   │
+├─ FASE 1 ────────┤                   │                   │
+│  (4 wks)        │                   │                   │
+│  LibPD+AAudio   ├─ FASE 2 ──────────┤                   │
+│                 │  (4 wks)          │                   │
+│                 │  Accessibility    ├─ FASE 3 ──────────┤
+│                 │                   │  (4 wks)          │
+│                 │                   │  ML Models        ├─ FASE 4 ────────┤
+│                 │                   │                   │  (6 wks)        │
+│                 │                   │                   │  Pulido+Release │
+│                 │                   │                   │  & LAUNCH 🚀    │
+│                 │                   │                   │                 │
+├─────────────────┴───────────────────┴───────────────────┴─────────────────┤
+│                                                                             │
+│ TOTAL: 18 SEMANAS (4.5 MESES) × 3.5-4 FTE = ~$244K USD                   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+
+NOTAS IMPORTANTES:
+
+⚠️  Timeline es realista pero AGRESIVO
+    → Requiere dedicación full-time
+    → Minimal change requests durante fases
+    → Equipo experimentado (no trainees)
+
+🔄 Cada fase DEPENDE de la anterior
+    → No se pueden paralelizar fases mayorment
+    → Pero actividades DENTRO de fases pueden ser paralelas
+
+📊 Buffer incluido implícitamente
+    → Daily standups para detectar blockers early
+    → Sprint retrospectives para mejoras
+    → Gates permiten ajustes si es necesario
+
+🚀 Post-release (Sep 22+):
+    → Support & bug fixes
+    → Community feedback loop
+    → Planning Fase 5 (Navegación outdoor)
+
+═══════════════════════════════════════════════════════════════════════════════

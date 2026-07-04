@@ -1,0 +1,23 @@
+{
+  "schema_version": "0.1",
+  "timestamp_ms": 0,
+  "frame_rate_hz": 30,
+  "grid": {
+    "rows": 16,
+    "cols": 16
+  },
+  "cells": [
+    {
+      "id": 0,
+      "row": 0,
+      "col": 0,
+      "azimuth_deg": -30.0,
+      "elevation_m": 1.2,
+      "distance_m": 2.5,
+      "material": "metal",
+      "luminance": 0.75,
+      "confidence": 0.92
+    }
+  ],
+  "notes": "Cada frame deberá ser enviado como objeto compacto. Para producción, considerar formato binario (Uint8/Float32) y compresión. Valores por celda: azimuth ∈ [-90,90], elevation en metros, distance en metros, material categoría string, luminance normalizada [0,1], confidence [0,1]."
+}
