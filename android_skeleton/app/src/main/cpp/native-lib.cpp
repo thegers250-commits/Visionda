@@ -1,106 +1,194 @@
-// Native JSON receiver and simple mapping functions
+// native-lib.cpp — JNI bridge: Kotlin ↔ C++ (LibPD + AAudio + Mapeos)
 #include <jni.h>
 #include <string>
 #include <android/log.h>
 #include <cmath>
 
-#define LOG_TAG "VisualondaNative"
-#define ALOG(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
+#include "libpd_wrapper.h"
+#include "audio_engine.h"
 
+#define LOG_TAG "VisualondaNative"
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO,  LOG_TAG, __VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+
+// ═══════════════════════════════════════════════════════════════════════
+//  MAPEOS MATEMÁTICOS (6 mappings camera → audio)
+// ═══════════════════════════════════════════════════════════════════════
+
+// 1. Elevación → Frecuencia   [0 m, 2.5 m] → [60 Hz, 5000 Hz]
 static double elevation_to_freq(double h) {
     const double f0 = 60.0;
-    const double k = 1.7685; // calculado para f(2.5)=5000
+    const double k  = 1.7685;   // k = ln(5000/60) / 2.5
     return f0 * std::exp(k * h);
 }
 
+// 2. Distancia → Ganancia     [0 m, ∞] → [1.0, 0.0]
 static double distance_gain(double r) {
     const double r_ref = 1.0;
     return 1.0 / (1.0 + (r / r_ref) * (r / r_ref));
 }
 
-static double distance_lpf_cutoff(double r) {
-    const double fc0 = 12000.0;
-    const double c = 0.18;
-    return fc0 * std::exp(-c * r);
+// 3. Distancia → LPF cutoff   [0 m, 10 m] → [12000 Hz, ~1500 Hz]
+static double distance_lpf(double r) {
+    return 12000.0 * std::exp(-0.18 * r);
 }
 
-// Minimal JSON extractors for known keys (robust enough for our sample)
-static bool extract_number(const std::string &s, const std::string &key, double &out) {
-    size_t pos = s.find(key);
+// 4. Azimut → Pan estéreo     [-90°, +90°] → [0.0, 1.0]
+static double azimuth_to_pan(double az_deg) {
+    return (az_deg + 90.0) / 180.0;
+}
+
+// 5. Luminancia → Beat delta  [0.0, 1.0] → [2 Hz, 12 Hz]
+static double luminance_to_beat(double lum) {
+    return 2.0 + 10.0 * lum;
+}
+
+// 6. Material → índice de modulación (simplificado)
+static double material_mod_index(const std::string& mat) {
+    if (mat == "metal")   return 3.5;
+    if (mat == "glass")   return 2.8;
+    if (mat == "wood")    return 1.2;
+    if (mat == "fabric")  return 0.6;
+    if (mat == "skin")    return 0.4;
+    return 1.0;  // default
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  MINI PARSER JSON (robusto para control_schema)
+// ═══════════════════════════════════════════════════════════════════════
+
+static bool extract_number(const std::string& s, const std::string& key, double& out) {
+    size_t pos = s.find("\"" + key + "\"");
     if (pos == std::string::npos) return false;
-    pos = s.find_first_of("-0123456789", pos + key.length());
+    pos = s.find_first_of("-0123456789", pos + key.length() + 2);
     if (pos == std::string::npos) return false;
     size_t end = pos;
-    while (end < s.size() && ( (s[end] >= '0' && s[end] <= '9') || s[end]=='.' || s[end]=='-' || s[end]=='e' || s[end]=='E' || s[end]=='+' )) end++;
-    try {
-        out = std::stod(s.substr(pos, end-pos));
-        return true;
-    } catch (...) {
-        return false;
+    while (end < s.size() &&
+           (s[end] == '-' || s[end] == '+' || s[end] == '.' ||
+            s[end] == 'e' || s[end] == 'E' ||
+            (s[end] >= '0' && s[end] <= '9'))) {
+        ++end;
+    }
+    try { out = std::stod(s.substr(pos, end - pos)); return true; }
+    catch (...) { return false; }
+}
+
+static std::string extract_string(const std::string& s, const std::string& key) {
+    size_t pos = s.find("\"" + key + "\"");
+    if (pos == std::string::npos) return "";
+    pos = s.find('"', pos + key.length() + 3);
+    if (pos == std::string::npos) return "";
+    size_t end = s.find('"', pos + 1);
+    if (end == std::string::npos) return "";
+    return s.substr(pos + 1, end - pos - 1);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  JNI — LibPD
+// ═══════════════════════════════════════════════════════════════════════
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_visualonda_sensory_MainActivity_pdInit(JNIEnv*, jobject) {
+    LOGI("[JNI] pdInit()");
+    if (libpd_wrapper_init()) {
+        LOGI("[JNI] ✅ LibPD inicializado");
+    } else {
+        LOGE("[JNI] ❌ LibPD falló al inicializar");
     }
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_visualonda_sensory_MainActivity_sendControlJson(JNIEnv* env, jobject /* this */, jstring jjson) {
-    const char* cstr = env->GetStringUTFChars(jjson, nullptr);
-    std::string s(cstr ? cstr : "");
-    env->ReleaseStringUTFChars(jjson, cstr);
-
-    ALOG("[native] Received JSON: %s", s.c_str());
-
-    // extract first cell parameters
-    double az=0.0, elev=0.0, dist=0.0, lum=0.0;
-    bool hasAz = extract_number(s, "azimuth_deg", az);
-    bool hasElev = extract_number(s, "elevation_m", elev);
-    bool hasDist = extract_number(s, "distance_m", dist);
-    bool hasLum = extract_number(s, "luminance", lum);
-
-    if (!hasAz && !hasElev && !hasDist && !hasLum) {
-        ALOG("[native] No numeric fields found in JSON.");
-        return;
-    }
-
-    double freq = elevation_to_freq(elev);
-    double gain = distance_gain(dist);
-    double lpf = distance_lpf_cutoff(dist);
-    double delta = 5.0 + 7.0 * lum;
-    double leftF = 4000.0 + delta/2.0;
-    double rightF = 4000.0 - delta/2.0;
-
-    ALOG("[native] Parsed cell -> az: %.2f deg, elev: %.2fm, dist: %.2fm, lum: %.2f", az, elev, dist, lum);
-    ALOG("[native] Mapping -> freq: %.2f Hz | gain: %.3f | LPF cutoff: %.1f Hz", freq, gain, lpf);
-    ALOG("[native] Light carriers -> L: %.2f Hz | R: %.2f Hz (delta %.2f)", leftF, rightF, delta);
-
-    // Send mapped parameters to DSP engine (placeholder)
-    // Replace this stub with real LibPD/PD or C++ DSP calls when integrating the audio engine.
-    // Example API points to implement: pd_send_float("freq", freq); pd_send_float("gain", gain); etc.
-    ALOG("[native] Sending params to DSP (stub)...");
-    // stub_send_to_dsp(freq, gain, lpf, leftF, rightF);
-}
-
-// Placeholder function: when LibPD or DSP engine is added, implement parameter sending here.
-static void stub_send_to_dsp(double freq, double gain, double lpf, double leftF, double rightF) {
-    // For now, just log -- replace with libpd bindings or FMOD/other engine calls.
-    ALOG("[DSP stub] freq=%.2f gain=%.3f lpf=%.1f left=%.2f right=%.2f", freq, gain, lpf, leftF, rightF);
-}
-
-// JNI stubs for LibPD integration
-extern "C" JNIEXPORT void JNICALL
-Java_com_visualonda_sensory_MainActivity_pdInit(JNIEnv* env, jobject /* this */) {
-    ALOG("[native] pdInit() called - stub (implement libpd init here)");
-}
-
-extern "C" JNIEXPORT void JNICALL
-Java_com_visualonda_sensory_MainActivity_pdOpenPatch(JNIEnv* env, jobject /* this */, jstring jpath) {
+Java_com_visualonda_sensory_MainActivity_pdOpenPatch(JNIEnv* env, jobject, jstring jpath) {
     const char* path = env->GetStringUTFChars(jpath, nullptr);
-    ALOG("[native] pdOpenPatch(%s) - stub (implement libpd openpatch)", path);
+    LOGI("[JNI] pdOpenPatch(%s)", path);
+    if (!libpd_wrapper_load_patch(path)) {
+        LOGE("[JNI] ❌ No se pudo cargar patch: %s", path);
+    }
     env->ReleaseStringUTFChars(jpath, path);
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_visualonda_sensory_MainActivity_pdSendFloat(JNIEnv* env, jobject /* this */, jstring jname, jfloat value) {
+Java_com_visualonda_sensory_MainActivity_pdSendFloat(JNIEnv* env, jobject, jstring jname, jfloat value) {
     const char* name = env->GetStringUTFChars(jname, nullptr);
-    ALOG("[native] pdSendFloat(%s, %.3f) - stub (implement libpd send)", name, value);
+    libpd_wrapper_send_float(name, value);
     env->ReleaseStringUTFChars(jname, name);
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+//  JNI — Audio Engine
+// ═══════════════════════════════════════════════════════════════════════
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_visualonda_sensory_MainActivity_audioEngineInit(JNIEnv*, jobject) {
+    LOGI("[JNI] audioEngineInit()");
+    if (audio_engine_init()) {
+        LOGI("[JNI] ✅ Audio engine corriendo");
+    } else {
+        LOGE("[JNI] ❌ Audio engine falló");
+    }
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_visualonda_sensory_MainActivity_audioEngineCleanup(JNIEnv*, jobject) {
+    LOGI("[JNI] audioEngineCleanup()");
+    audio_engine_cleanup();
+}
+
+extern "C" JNIEXPORT jint JNICALL
+Java_com_visualonda_sensory_MainActivity_audioEngineGetLatency(JNIEnv*, jobject) {
+    return static_cast<jint>(audio_engine_get_latency_ms());
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  JNI — Control Schema (camera frame → audio)
+// ═══════════════════════════════════════════════════════════════════════
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_visualonda_sensory_MainActivity_sendControlJson(JNIEnv* env, jobject, jstring jjson) {
+    const char* cstr = env->GetStringUTFChars(jjson, nullptr);
+    std::string s(cstr ? cstr : "");
+    env->ReleaseStringUTFChars(jjson, cstr);
+
+    if (s.empty()) return;
+
+    // Extraer parámetros de la PRIMERA celda del JSON
+    double az = 0, elev = 0, dist = 1, lum = 0.5;
+    extract_number(s, "azimuth_deg",  az);
+    extract_number(s, "elevation_m",  elev);
+    extract_number(s, "distance_m",   dist);
+    extract_number(s, "luminance",    lum);
+    std::string mat = extract_string(s, "material");
+    if (mat.empty()) mat = "wood";
+
+    // Calcular todos los mapeos
+    double freq       = elevation_to_freq(elev);
+    double gain       = distance_gain(dist);
+    double lpf        = distance_lpf(dist);
+    double pan        = azimuth_to_pan(az);
+    double beat_delta = luminance_to_beat(lum);
+    double mod_idx    = material_mod_index(mat);
+
+    double left_freq  = freq + beat_delta / 2.0;
+    double right_freq = freq - beat_delta / 2.0;
+
+    LOGI("[MAP] az=%.1f° elev=%.2fm dist=%.2fm lum=%.2f mat=%s",
+         az, elev, dist, lum, mat.c_str());
+    LOGI("[MAP] freq=%.1fHz gain=%.3f lpf=%.1fHz pan=%.2f beat=%.1fHz mod=%.2f",
+         freq, gain, lpf, pan, beat_delta, mod_idx);
+
+    // Enviar a LibPD si está disponible
+    if (libpd_wrapper_is_initialized()) {
+        libpd_wrapper_send_float("light-freq-left",   (float)left_freq);
+        libpd_wrapper_send_float("light-freq-right",  (float)right_freq);
+        libpd_wrapper_send_float("distance-gain",     (float)gain);
+        libpd_wrapper_send_float("distance-lpf",      (float)lpf);
+        libpd_wrapper_send_float("azimuth-pan",       (float)pan);
+        libpd_wrapper_send_float("luminance-beat",    (float)beat_delta);
+        libpd_wrapper_send_float("material-mod",      (float)mod_idx);
+    } else {
+        // LibPD no disponible: actualizar oscilador de fallback directo
+        audio_engine_set_frequency((float)freq);
+        audio_engine_set_amplitude((float)(gain * 0.4));
+        audio_engine_set_pan((float)pan);
+    }
 }
